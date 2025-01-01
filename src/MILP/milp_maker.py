@@ -5,8 +5,15 @@ from pulp import PULP_CBC_CMD, LpMinimize, LpProblem, LpVariable, lpSum
 logger = logging.getLogger("shift_scheduler")
 
 
-class ShiftScheduler:
+class MILPMaker:
     def __init__(self, availability, role_compatibility):
+        logger.debug(f"employees: {list(availability.keys())}")
+        logger.debug(
+            f"roles: {list(role_compatibility[list(availability.keys())[0]].keys())}"
+        )
+        logger.debug(f"availability: {availability}")
+        logger.debug(f"role_compatibility: {role_compatibility}")
+
         self.employees = list(availability.keys())
         self.roles = list(role_compatibility[self.employees[0]].keys())
         self.availability = availability
@@ -46,7 +53,10 @@ class ShiftScheduler:
                 )
 
         # 制約条件4: 各従業員は1日に1つの役職のみ
+        # ただし、派遣は複数の役職を担当可能
         for e in self.employees:
+            if e == "派遣":
+                continue
             problem += (
                 lpSum(x[(e, r)] for r in self.roles) <= 1,
                 f"SingleRoleAssignment_Day_{day}_{e}",
@@ -65,6 +75,7 @@ class ShiftScheduler:
 
         logger.info(f"Solving Day {day}...")
         result = problem.solve(PULP_CBC_CMD(msg=False))
+        logger.debug(f"Solved: {result}")
 
         if result == 1:
             schedule = {
@@ -242,13 +253,13 @@ if __name__ == "__main__":
         "派遣": {"血圧": False, "採血": True, "受付": False},
     }
 
-    scheduler = ShiftScheduler(availability, role_compatibility)
+    maker = MILPMaker(availability, role_compatibility)
 
     # 日毎のスケジュール解決
     for day in list(availability.values())[0].keys():
-        print(f"Day {day}:")
         try:
-            schedule = scheduler.solve_for_day(day)
+            schedule = maker.solve_for_day(day)
+            print(f"Day {day}:")
             for role, employee in schedule.items():
                 print(f"  {role}: {employee}")
         except Exception as e:
