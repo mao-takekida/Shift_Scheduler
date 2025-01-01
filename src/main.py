@@ -18,7 +18,9 @@ if __name__ == "__main__":
     # 希望シフト
     availability_df = reader.read(args.sheet_name)
     # capabilities
-    capabilities_df = reader.read("capabilities")
+    capabilities_df = reader.read("割り当て")
+    # 社員のリスト
+    fulltime = reader.read_fulltime("社員リスト")
 
     availability = dict(availability_df.apply(lambda x: x.dropna().to_dict(), axis=1))
     # ox を True/False に変換
@@ -37,10 +39,33 @@ if __name__ == "__main__":
         }
         for name in capabilities
     }
-    logger.info("availability: %s", availability)
-    logger.info("capabilities: %s", capabilities)
 
-    maker = MILPMaker(availability, capabilities)
+    # fulltime_df
+    # 派遣	x
+    # 齋藤	x
+    # 山田	o
+    # 和田	o
+    # 田中	x
+    # 佐藤	o
+    # 中村	x
+    # 小林	o
+    # 加藤	x
+    # 吉田	o
+    # 山本	x
+
+    # fulltime
+    # 派遣 False
+    # 齋藤 False
+    # 山田 True
+    # 和田 True
+    # 田中 False
+    # 佐藤 True
+
+    logger.debug("availability: %s\n", availability)
+    logger.debug("capabilities: %s\n", capabilities)
+    logger.debug("fulltime: %s\n", fulltime)
+
+    maker = MILPMaker(availability, capabilities, fulltime)
 
     # 日毎のスケジュール解決
     for day in list(availability.values())[0].keys():

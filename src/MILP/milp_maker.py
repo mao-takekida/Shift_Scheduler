@@ -6,18 +6,20 @@ logger = logging.getLogger("shift_scheduler")
 
 
 class MILPMaker:
-    def __init__(self, availability, role_compatibility):
+    def __init__(self, availability, role_compatibility, fulltime):
         logger.debug(f"employees: {list(availability.keys())}")
         logger.debug(
             f"roles: {list(role_compatibility[list(availability.keys())[0]].keys())}"
         )
         logger.debug(f"availability: {availability}")
         logger.debug(f"role_compatibility: {role_compatibility}")
+        logger.debug(f"fulltime: {fulltime}")
 
         self.employees = list(availability.keys())
         self.roles = list(role_compatibility[self.employees[0]].keys())
         self.availability = availability
         self.role_compatibility = role_compatibility
+        self.fulltime = fulltime
 
     def solve_for_day(self, day):
         problem = LpProblem(f"ShiftAssignment_Day_{day}", LpMinimize)
@@ -61,6 +63,18 @@ class MILPMaker:
                 lpSum(x[(e, r)] for r in self.roles) <= 1,
                 f"SingleRoleAssignment_Day_{day}_{e}",
             )
+
+        logger.debug(f"fulltime: {self.fulltime}")
+
+        # 制約条件5: 血圧と受付のいずれかは社員が担当
+        problem += (
+            lpSum(x[(e, "血圧")] for e in self.employees if self.fulltime[e])
+            + lpSum(x[(e, "受付")] for e in self.employees if self.fulltime[e])
+            >= 1,
+            f"FulltimeRoleAssignment_Day_{day}",
+        )
+
+        logger.debug(f"num of variables: {len(problem.variables())}")
 
         # 目的関数: 派遣の割り当てを最小化
         problem += lpSum(x[("派遣", r)] for r in self.roles)
