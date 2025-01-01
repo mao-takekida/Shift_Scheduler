@@ -40,7 +40,7 @@ pip install -r requirements.txt
 ```
 
 ## 2. python スクリプトを実行
-以下のコマンドを実行してください。
+<!-- 以下のコマンドを実行してください。
 
 法人名の情報を元に、e-tax 開始届出（法人用）　新規 を行うためのフォームを作成します。
 
@@ -51,32 +51,32 @@ python src/run_gui.py
 ログレベルを指定してログを出力することもできます。
 ```bash
 python src/run_gui.py -l DEBUG
-```
+``` -->
 
-詳しくは
+<!-- 詳しくは
 ```bash
 python src/run_gui.py --help
 ```
-を確認してください。
+を確認してください。 -->
 
 
-# 実行ファイルの作成 (macOS, Windows)
+<!-- # 実行ファイルの作成 (macOS, Windows)
 pyinstaller を使って、実行ファイルを作成することができます。
 
 以下のコマンドを実行してください。
 ```bash
 pyinstaller --noconsole --add-data "config/config.json:config" --name e-tax-automate --icon=icon/favicon.ico src/run_gui.py
-```
+``` -->
 
 アプリケーションは `dist/e-tax-automate.app` に作成されます。
 ダブルクリックで実行することができます。
 
 # 以下は、開発者向けの情報です。
 
-## テストを実行することができます。
+<!-- ## テストを実行することができます。
 ```bash
 pytest
-```
+``` -->
 
 ## pre-commit によるコードフォーマットと静的解析, テストを行うことができます。
 ```bash
