@@ -1,5 +1,5 @@
-from pulp import LpProblem, LpVariable, lpSum, LpStatus
-from pulp import PULP_CBC_CMD
+from pulp import PULP_CBC_CMD, LpProblem, LpVariable, lpSum
+
 
 class ShiftScheduler:
     def __init__(self, employees, roles, availability, role_compatibility):
@@ -18,36 +18,68 @@ class ShiftScheduler:
 
         # 制約条件1: 各役職は1人の担当者のみ
         for r in self.roles:
-            problem += lpSum(x[(e, r)] for e in self.employees) == 1, f"RoleAssignment_Day_{day}_{r}"
+            problem += (
+                lpSum(x[(e, r)] for e in self.employees) == 1,
+                f"RoleAssignment_Day_{day}_{r}",
+            )
 
         # 制約条件2: 従業員のシフト可能性に基づく制約
         for e in self.employees:
             for r in self.roles:
-                problem += x[(e, r)] <= self.availability[e][day - 1], f"Availability_{e}_{day}_{r}"
+                problem += (
+                    x[(e, r)] <= self.availability[e][day - 1],
+                    f"Availability_{e}_{day}_{r}",
+                )
 
         # 制約条件3: 各従業員の役職適性を考慮
         for e in self.employees:
             for r in self.roles:
-                problem += x[(e, r)] <= self.role_compatibility[e][r], f"Compatibility_{e}_{day}_{r}"
+                problem += (
+                    x[(e, r)] <= self.role_compatibility[e][r],
+                    f"Compatibility_{e}_{day}_{r}",
+                )
 
         # 制約条件4: 各従業員は1日に1つの役職のみ
         for e in self.employees:
-            problem += lpSum(x[(e, r)] for r in self.roles) <= 1, f"SingleRoleAssignment_{e}_{day}"
+            problem += (
+                lpSum(x[(e, r)] for r in self.roles) <= 1,
+                f"SingleRoleAssignment_{e}_{day}",
+            )
 
         # 目的関数: 割り当てを最大化
-        problem += lpSum(x[(e, r)] for e in self.employees for r in self.roles), f"MaximizeAssignments_Day_{day}"
-        
+        problem += (
+            lpSum(x[(e, r)] for e in self.employees for r in self.roles),
+            f"MaximizeAssignments_Day_{day}",
+        )
+
         result = problem.solve(PULP_CBC_CMD(msg=False))
 
         if result == 1:
-            schedule = {r: e for e in self.employees for r in self.roles if x[(e, r)].value() == 1}
+            schedule = {
+                r: e
+                for e in self.employees
+                for r in self.roles
+                if x[(e, r)].value() == 1
+            }
             return schedule
         else:
             raise Exception(f"解が見つかりませんでした: Day {day}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # データの定義
-    employees = ["齋藤", "山田", "和田", "田中", "佐藤", "中村", "小林", "加藤", "吉田", "山本"]
+    employees = [
+        "齋藤",
+        "山田",
+        "和田",
+        "田中",
+        "佐藤",
+        "中村",
+        "小林",
+        "加藤",
+        "吉田",
+        "山本",
+    ]
     days = list(range(1, 11))  # 日数 (1〜10)
     roles = ["血圧", "採血", "受付"]
 
@@ -62,7 +94,7 @@ if __name__ == '__main__':
         "小林": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         "加藤": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         "吉田": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        "山本": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        "山本": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     }
 
     # 各役職への適性（サンプルデータ）
@@ -76,7 +108,7 @@ if __name__ == '__main__':
         "小林": {"血圧": 1, "採血": 1, "受付": 1},
         "加藤": {"血圧": 1, "採血": 1, "受付": 1},
         "吉田": {"血圧": 1, "採血": 1, "受付": 1},
-        "山本": {"血圧": 1, "採血": 1, "受付": 1}
+        "山本": {"血圧": 1, "採血": 1, "受付": 1},
     }
 
     scheduler = ShiftScheduler(employees, roles, availability, role_compatibility)
@@ -90,5 +122,3 @@ if __name__ == '__main__':
                 print(f"  {role}: {employee}")
         except Exception as e:
             print(f"  {e}")
-            
-        

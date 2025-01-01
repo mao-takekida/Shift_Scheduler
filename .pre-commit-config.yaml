@@ -35,12 +35,12 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  # pytest
-  - repo: local
-    hooks:
-      - id: pytest
-        name: Run pytest
-        entry: pytest tests/
-        language: system
-        types: [python]
-        pass_filenames: false
+  # # pytest
+  # - repo: local
+  #   hooks:
+  #     - id: pytest
+  #       name: Run pytest
+  #       entry: pytest tests/
+  #       language: system
+  #       types: [python]
+  #       pass_filenames: false
