@@ -1,0 +1,19 @@
+# python 仮想環境
+venv/
+
+# pycache
+__pycache__/
+
+# pyinstaller
+dist/
+build/
+
+# vscode
+.vscode/
+
+# zip
+*.zip
+
+# pytest
+.coverage
+.pytest_cache/
