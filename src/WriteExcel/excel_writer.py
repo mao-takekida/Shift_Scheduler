@@ -19,13 +19,13 @@ class ExcelWriter:
         self.path = path
         self.sheet_name = sheet_name
 
-    def write_schedule(self, days: List[int], schedule: List[Dict[str, str]]):
+    def write_schedule(self, days: List[int], schedule: List[Dict[str, List[str]]]):
         """
         スケジュールをExcelに書き込みます。
 
         Args:
             days (List[int]): 日付リスト。
-            schedule (List[Dict[str, str]]): 各日の役割と担当者のリスト。
+            schedule (List[Dict[str, List[str]]]): スケジュールリスト。
         """
 
         # すでにファイルが存在する場合は yes or no で確認
@@ -55,10 +55,13 @@ class ExcelWriter:
 
             # データ行にスケジュールを記載
             for i, day in enumerate(days, start=1):  # 行は 1 からスタート
-                # 数値として
+                # dayは数値として
                 worksheet.write(i, 0, day)
+
                 for j, role in enumerate(roles, start=1):  # 列は 1 からスタート
-                    worksheet.write(i, j, schedule[i - 1].get(role, ""))
+                    # list をカンマ区切りの文字列に変換
+                    workers = ", ".join(schedule[i - 1].get(role, ""))
+                    worksheet.write(i, j, workers)
 
             workbook.close()
             logger.info("スケジュールが正常に書き込まれました。")
