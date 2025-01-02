@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import xlsxwriter
 
@@ -13,59 +13,75 @@ class ExcelWriter:
         ExcelWriterを初期化します。
 
         Args:
-            path (str): Excelファイルの保存先パス。
+            path (str): 保存するExcelファイルのパス。
             sheet_name (str): シート名。
         """
         self.path = path
         self.sheet_name = sheet_name
 
-    def write_schedule(self, days: List[int], schedule: List[Dict[str, List[str]]]):
+    def write_schedule(self, schedule_list: List[Tuple[str, Dict[str, List[str]]]]):
         """
-        スケジュールをExcelに書き込みます。
+        スケジュールをExcelファイルに書き込みます。
 
         Args:
-            days (List[int]): 日付リスト。
-            schedule (List[Dict[str, List[str]]]): スケジュールリスト。
+            schedule_list (List[Tuple[str, Dict[str, List[str]]]]): スケジュールのリスト。
+                フォーマット: [(day_index, {role: [worker1, worker2, ...]})]
         """
-
-        # すでにファイルが存在する場合は yes or no で確認
-        if Path(self.path).exists():
-            while True:
-                answer = input(
-                    f"{self.path} は既に存在します。上書きしますか？ [y/n]: "
-                )
-                if answer == "yes" or answer == "y":
-                    break
-                elif answer == "no" or answer == "n":
-                    logger.info("スケジュールの書き込みを中止しました。")
-                    return
-                else:
-                    logger.warning("yes か no を入力してください。")
+        if not self._confirm_overwrite():
+            logger.info("スケジュールの書き込みを中止しました。")
+            return
 
         try:
-            workbook = xlsxwriter.Workbook(self.path)
-            worksheet = workbook.add_worksheet(self.sheet_name)
-
-            # ヘッダー行に見出しを記載
-            worksheet.write(0, 0, "Day")
-            roles = list(schedule[0].keys())
-
-            for col, role in enumerate(roles, start=1):
-                worksheet.write(0, col, role)
-
-            # データ行にスケジュールを記載
-            for i, day in enumerate(days, start=1):  # 行は 1 からスタート
-                # dayは数値として
-                worksheet.write(i, 0, day)
-
-                for j, role in enumerate(roles, start=1):  # 列は 1 からスタート
-                    # list をカンマ区切りの文字列に変換
-                    workers = ", ".join(schedule[i - 1].get(role, ""))
-                    worksheet.write(i, j, workers)
-
-            workbook.close()
+            self._create_excel(schedule_list)
             logger.info("スケジュールが正常に書き込まれました。")
-
         except Exception as e:
             logger.error(f"スケジュールの書き込み中にエラーが発生しました: {e}")
             raise
+
+    def _confirm_overwrite(self) -> bool:
+        """
+        既存のファイルを上書きするかどうかを確認します。
+
+        Returns:
+            bool: 上書きを確認した場合はTrue、それ以外はFalse。
+        """
+        if Path(self.path).exists():
+            while True:
+                answer = (
+                    input(f"{self.path} は既に存在します。上書きしますか？ [y/n]: ")
+                    .strip()
+                    .lower()
+                )
+                if answer in {"yes", "y"}:
+                    return True
+                elif answer in {"no", "n"}:
+                    return False
+                else:
+                    logger.warning("'yes' または 'no' を入力してください。")
+        return True
+
+    def _create_excel(self, schedule_list: List[Tuple[str, Dict[str, List[str]]]]):
+        """
+        指定されたスケジュールを使用してExcelファイルを作成し保存します。
+
+        Args:
+            schedule_list (List[Tuple[str, Dict[str, List[str]]]]): スケジュールのリスト。
+        """
+        workbook = xlsxwriter.Workbook(self.path)
+        worksheet = workbook.add_worksheet(self.sheet_name)
+
+        # ヘッダーを書き込む
+        worksheet.write(0, 0, "Day")
+        roles = list(schedule_list[0][1].keys())
+
+        for col, role in enumerate(roles, start=1):
+            worksheet.write(0, col, role)
+
+        # スケジュールデータを書き込む
+        for row_idx, (day_index, roles_dict) in enumerate(schedule_list, start=1):
+            worksheet.write(row_idx, 0, day_index)
+            for col_idx, role in enumerate(roles, start=1):
+                workers = ", ".join(roles_dict.get(role, []))
+                worksheet.write(row_idx, col_idx, workers)
+
+        workbook.close()

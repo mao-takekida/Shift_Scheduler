@@ -43,7 +43,7 @@ class ExcelReader:
         }
         return capabilities
 
-    def read_fulltime(self, sheet_name) -> dict:
+    def read_fulltime(self, sheet_name) -> Dict[str, bool]:
         df = pd.read_excel(self.path, sheet_name=sheet_name, header=None)
         df.columns = ["name", "is_fulltime"]
         # ox -> True/False
@@ -57,3 +57,9 @@ class ExcelReader:
             for name, is_fulltime in zip(df["name"], df["is_fulltime"])
         }
         return fulltime_dict
+
+    def read_weights(self, sheet_name) -> Dict[str, float]:
+        df = pd.read_excel(self.path, sheet_name=sheet_name, header=None)
+        df.columns = ["name", "weight"]
+        weights_dict = {name: weight for name, weight in zip(df["name"], df["weight"])}
+        return weights_dict
