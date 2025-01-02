@@ -10,7 +10,9 @@ logger = logging.getLogger("shift_scheduler")
 
 
 class MILPMaker:
-    def __init__(self, availability, role_compatibility, fulltime, weights):
+    def __init__(
+        self, availability, role_compatibility, fulltime, weights, num_required
+    ):
         # 従業員と役職の初期化
         self.employees = list(availability.keys())
         self.roles = list(role_compatibility[self.employees[0]].keys())
@@ -18,6 +20,7 @@ class MILPMaker:
         self.role_compatibility = role_compatibility
         self.fulltime = fulltime
         self.weights = weights
+        self.num_required = num_required
 
         logger.debug(f"Initialized MILPMaker with employees: {self.employees}")
         logger.debug(f"Roles: {self.roles}")
@@ -25,15 +28,17 @@ class MILPMaker:
         logger.debug(f"Role compatibility: {self.role_compatibility}")
         logger.debug(f"Fulltime employees: {self.fulltime}")
         logger.debug(f"Weights: {self.weights}")
+        logger.debug(f"Number of required employees: {self.num_required}")
 
     def solve_for_day(
-        self, day: int, num_trials: int = 1
+        self, day: str, num_trials: int = 1
     ) -> List[Dict[str, List[str]]]:
+
         # 問題を作成
         problem = self._create_base_problem(day)
 
         # LP の出力
-        logger.debug(problem)
+        # logger.debug(problem)
 
         schedules = []
 
@@ -62,6 +67,7 @@ class MILPMaker:
         return var.lowBound == 0 and var.upBound == 1
 
     def _create_base_problem(self, day: int) -> LpProblem:
+
         # 線形計画問題を作成
         # 最大化問題
         problem = LpProblem(f"ShiftAssignment_Day_{day}", LpMaximize)
@@ -71,7 +77,7 @@ class MILPMaker:
         x = {}
         for e in self.employees:
             for r in self.roles:
-                if (e == "メディカル") or ("不足" in e) or ("不要" in e):
+                if (e == "メディカル") or ("不足" in e):
                     # integer
                     x[(e, r)] = LpVariable(f"{e}_{r}", lowBound=0, cat=pulp.LpInteger)
                 else:
@@ -88,19 +94,31 @@ class MILPMaker:
 
         return problem
 
-    def _add_role_constraints(self, problem: LpProblem, x: Dict, day: int):
-        # 各役職の必要人数の制約を追加
-        for r in self.roles:
-            required_count = {
-                "採血": 4,
-                "血圧": 2,
-                "計測": 3,
-                "胃カメラ": 6,
-                "5F採血": 2,
-            }.get(r, 1)
+    def _to_half_width_parentheses(self, day: str) -> str:
+        # 全角() を半角() に変換
+        day = day.replace("（", "(").replace("）", ")")
+        return day
 
+    def assert_days_of_week(self, days_of_week: str):
+        # 曜日が正しいかどうかを確認
+        days_of_week_list = ["月", "火", "水", "木", "金", "土", "日"]
+        if days_of_week not in days_of_week_list:
+            logger.error(f"Invalid day of the week: {days_of_week}")
+            raise ValueError("Invalid day of the week.")
+
+    def _add_role_constraints(self, problem: LpProblem, x: Dict, day: int):
+        # 曜日を取得 12(火) -> 火曜
+        # 全角（数字）を半角（数字）に変換
+        day = self._to_half_width_parentheses(day)
+        days_of_week = day.split("(")[1].split(")")[0]
+
+        self.assert_days_of_week(days_of_week)
+
+        # 各役職の必要人数の制約を追加
+        required_count = self.num_required[days_of_week]
+        for r in self.roles:
             problem += (
-                lpSum(x[(e, r)] for e in self.employees) == required_count,
+                lpSum(x[(e, r)] for e in self.employees) == required_count[r],
                 f"RoleAssignment_Day_{day}_{r}",
             )
 
@@ -127,9 +145,10 @@ class MILPMaker:
     def _add_single_role_constraints(self, problem: LpProblem, x: Dict):
         # 各従業員が1日に1つの役職のみ担当する制約を追加
         for e in self.employees:
-            if "不足" in e or "不要" in e:
+            if "不足" in e:
                 continue
             elif e == "メディカル":
+                # メディカルは4つまで担当可能
                 problem += (
                     lpSum(x[(e, r)] for r in self.roles) <= 4,
                     f"SingleRoleAssignment_{e}",
@@ -152,7 +171,6 @@ class MILPMaker:
         )
 
     def _add_objective_function(self, problem: LpProblem, x: Dict):
-        # 重みに基づいて, 目的関数を設定
         # weights に基づいて, 目的関数を設定
         problem += (
             lpSum(

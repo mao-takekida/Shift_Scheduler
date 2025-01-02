@@ -40,24 +40,23 @@ pip install -r requirements.txt
 ```
 
 ## 2. python スクリプトを実行
-<!-- 以下のコマンドを実行してください。
 
-法人名の情報を元に、e-tax 開始届出（法人用）　新規 を行うためのフォームを作成します。
 
+例として, 以下のコマンドを実行してください。
 ```bash
-python src/run_gui.py
+python src/main.py data/data.xlsx 12月 -n 10
 ```
 
 ログレベルを指定してログを出力することもできます。
 ```bash
-python src/run_gui.py -l DEBUG
-``` -->
-
-<!-- 詳しくは
-```bash
-python src/run_gui.py --help
+python src/main.py -data/data.xlsx 12月 -n 10 -l DEBUG
 ```
-を確認してください。 -->
+
+詳しくは
+```bash
+python src/main.py --help
+```
+を確認してください。
 
 
 <!-- # 実行ファイルの作成 (macOS, Windows)

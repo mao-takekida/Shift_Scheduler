@@ -8,7 +8,7 @@ class ExcelReader:
     def __init__(self, path):
         self.path = path
 
-    # 一列目が名前、二列目以降が日付の希望シフト
+    # 1列目をインデックスにしてデータフレームを読み込む
     def read(self, sheet_name: str) -> pd.DataFrame:
         df = pd.read_excel(self.path, sheet_name=sheet_name, index_col=0)
         return df
@@ -63,3 +63,16 @@ class ExcelReader:
         df.columns = ["name", "weight"]
         weights_dict = {name: weight for name, weight in zip(df["name"], df["weight"])}
         return weights_dict
+
+    def read_number_of_needed_employees(self, sheet_name) -> Dict[str, int]:
+        df = self.read(sheet_name)
+        # 1列目が曜日, 一行目が役職
+        needed_employees = dict(df.apply(lambda x: x.dropna().to_dict(), axis=1))
+        # 曜日ごとに必要な従業員数を取得
+        needed_employees = {
+            day: {
+                role: int(needed_employees[day][role]) for role in needed_employees[day]
+            }
+            for day in needed_employees
+        }
+        return needed_employees

@@ -29,11 +29,15 @@ def read_excel_data(excel_path: str, sheet_name: str, logger) -> Dict:
     fulltime = reader.read_fulltime("社員リスト")
     # 重みデータを読み込む
     weights = reader.read_weights("重み")
+    # 曜日ごとの必要人数データを読み込む
+    num_required = reader.read_number_of_needed_employees("人数")
+
     return {
         "availabilities": availabilities,
         "capabilities": capabilities,
         "fulltime": fulltime,
         "weights": weights,
+        "num_required": num_required,
     }
 
 
@@ -41,7 +45,11 @@ def solve_schedule(data: Dict, num_trials: int, logger) -> List:
     """MILPを使用してシフトスケジュールを解決する関数"""
     logger.info("MILPを使用してシフトスケジュールを解決します。")
     maker = MILPMaker(
-        data["availabilities"], data["capabilities"], data["fulltime"], data["weights"]
+        data["availabilities"],
+        data["capabilities"],
+        data["fulltime"],
+        data["weights"],
+        data["num_required"],
     )
     schedule_list = []
     days = list(data["availabilities"].values())[0].keys()
