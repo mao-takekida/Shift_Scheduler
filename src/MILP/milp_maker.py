@@ -27,12 +27,12 @@ class MILPMaker:
         problem = LpProblem(f"ShiftAssignment_Day_{day}", LpMinimize)
         logger.debug(f"make problem: {problem.name}")
 
-        # メディカルと不足は　非負の整数
+        # メディカルと不足, 不要は非負の整数
         # それ以外はバイナリ
         x = {
             (e, r): (
                 LpVariable(f"{e}_{r}", lowBound=0, cat="Integer")
-                if e == "メディカル" or "不足" in e
+                if e == "メディカル" or "不足" in e or "不要" in e
                 else LpVariable(f"{e}_{r}", cat="Binary")
             )
             for e in self.employees
@@ -93,10 +93,10 @@ class MILPMaker:
                 )
 
         # 制約条件: 各従業員は1日に1つの役職のみ
-        # ただし、メディカル, 外来不足, 計測不足, 胃カメラ不足, 5F採血不足は除く
+        # ただし、不足, 不要, メディカルは複数可
         # メディカルは 4人まで
         for e in self.employees:
-            if "不足" in e:
+            if "不足" in e or "不要" in e:
                 continue
             elif e == "メディカル":
                 problem += (
@@ -124,13 +124,14 @@ class MILPMaker:
 
         logger.debug(f"num of variables: {len(problem.variables())}")
 
-        # 目的関数: *不足 * 100 + メディカル
+        # 目的関数: *不足 * 100 + メディカル - 不要 * 100 の最小化
         problem += (
             lpSum(x[("外来不足", r)] for r in self.roles) * 100
             + lpSum(x[("計測不足", r)] for r in self.roles * 100)
             + lpSum(x[("胃カメラ不足", r)] for r in self.roles) * 100
             + lpSum(x[("5F採血不足", r)] for r in self.roles) * 100
-            + lpSum(x[("メディカル", r)] for r in self.roles),
+            + lpSum(x[("メディカル", r)] for r in self.roles)
+            - lpSum(x[("外来不要", r)] for r in self.roles) * 100,
             "Objective",
         )
 

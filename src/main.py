@@ -6,11 +6,16 @@ from utils.logger import setup_logger
 from WriteExcel.excel_writer import ExcelWriter
 
 
-def main():
+def setup_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="シフトを作成します。")
     parser.add_argument("excel_path", help="エクセルファイルのパス")
     parser.add_argument("sheet_name", help="シート名")
     parser.add_argument("-l", "--loglevel", help="ログレベル", default="INFO")
+    return parser
+
+
+def main():
+    parser = setup_parser()
     args = parser.parse_args()
 
     logger = setup_logger("shift_scheduler", args.loglevel)
@@ -30,9 +35,8 @@ def main():
 
     maker = MILPMaker(availabilities, capabilities, fulltime)
 
-    schedule_list = []
-
     # 日毎のスケジュール解決
+    schedule_list = []
     for day in list(availabilities.values())[0].keys():
         schedule = maker.solve_for_day(day)
         logger.info(f"Day {day}:")
