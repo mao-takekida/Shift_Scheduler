@@ -3,6 +3,7 @@ import argparse
 from MILP.milp_maker import MILPMaker
 from ReadExcel.excel_reader import ExcelReader
 from utils.logger import setup_logger
+from WriteExcel.excel_writer import ExcelWriter
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="シフトを作成します。")
@@ -67,15 +68,21 @@ if __name__ == "__main__":
 
     maker = MILPMaker(availability, capabilities, fulltime)
 
+    schedule_list = []
+
     # 日毎のスケジュール解決
     for day in list(availability.values())[0].keys():
-        try:
-            schedule = maker.solve_for_day(day)
-            print(f"Day {day}:")
-            for role, employee in schedule.items():
-                print(f"  {role}: {employee}")
-        except Exception as e:
-            print(f"  {e}")
+        schedule = maker.solve_for_day(day)
+        print(f"Day {day}:")
+        for role, employee in schedule.items():
+            print(f"  {role}: {employee}")
+        schedule_list.append(schedule)
         print()
+
+    # ここでスケジュールをエクセルに書き込む処理を追加する
+    ewriter = ExcelWriter(
+        str(args.excel_path).replace(".xlsx", "_output.xlsx"), args.sheet_name
+    )
+    ewriter.write_schedule(list(availability.values())[0].keys(), schedule_list)
 
     logger.info("処理を終了します。")

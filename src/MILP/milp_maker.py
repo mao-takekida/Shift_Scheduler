@@ -1,4 +1,5 @@
 import logging
+from typing import Dict
 
 from pulp import PULP_CBC_CMD, LpMinimize, LpProblem, LpVariable, lpSum
 
@@ -21,7 +22,7 @@ class MILPMaker:
         self.role_compatibility = role_compatibility
         self.fulltime = fulltime
 
-    def solve_for_day(self, day):
+    def solve_for_day(self, day: int) -> Dict[str, str]:
         problem = LpProblem(f"ShiftAssignment_Day_{day}", LpMinimize)
         logger.debug(f"make problem: {problem.name}")
 
@@ -100,7 +101,7 @@ class MILPMaker:
             }
             return schedule
         else:
-            raise Exception(f"解が見つかりませんでした: Day {day}")
+            raise Exception(f"Day {day} のスケジュールが見つかりませんでした。")
 
 
 if __name__ == "__main__":
