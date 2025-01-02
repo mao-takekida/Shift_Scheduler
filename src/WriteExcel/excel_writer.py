@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Dict, List
 
 import xlsxwriter
@@ -26,6 +27,21 @@ class ExcelWriter:
             days (List[int]): 日付リスト。
             schedule (List[Dict[str, str]]): 各日の役割と担当者のリスト。
         """
+
+        # すでにファイルが存在する場合は yes or no で確認
+        if Path(self.path).exists():
+            while True:
+                answer = input(
+                    f"{self.path} は既に存在します。上書きしますか？ [y/n]: "
+                )
+                if answer == "yes" or answer == "y":
+                    break
+                elif answer == "no" or answer == "n":
+                    logger.info("スケジュールの書き込みを中止しました。")
+                    return
+                else:
+                    logger.warning("yes か no を入力してください。")
+
         try:
             workbook = xlsxwriter.Workbook(self.path)
             worksheet = workbook.add_worksheet(self.sheet_name)

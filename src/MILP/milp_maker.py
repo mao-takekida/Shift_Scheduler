@@ -56,9 +56,9 @@ class MILPMaker:
                 )
 
         # 制約条件4: 各従業員は1日に1つの役職のみ
-        # ただし、派遣は複数の役職を担当可能
+        # ただし、メディカル, 外来は複数の役職を担当可能
         for e in self.employees:
-            if e == "派遣":
+            if e == "メディカル" or e == "外来":
                 continue
             problem += (
                 lpSum(x[(e, r)] for r in self.roles) <= 1,
@@ -68,17 +68,19 @@ class MILPMaker:
         logger.debug(f"fulltime: {self.fulltime}")
 
         # 制約条件5: 血圧と受付のいずれかは社員が担当
-        problem += (
-            lpSum(x[(e, "血圧")] for e in self.employees if self.fulltime[e])
-            + lpSum(x[(e, "受付")] for e in self.employees if self.fulltime[e])
-            >= 1,
-            f"FulltimeRoleAssignment_Day_{day}",
-        )
+        # problem += (
+        #     lpSum(x[(e, "血圧")] for e in self.employees if self.fulltime[e])
+        #     + lpSum(x[(e, "受付")] for e in self.employees if self.fulltime[e])
+        #     >= 1,
+        #     f"FulltimeRoleAssignment_Day_{day}",
+        # )
 
         logger.debug(f"num of variables: {len(problem.variables())}")
 
-        # 目的関数: 派遣の割り当てを最小化
-        problem += lpSum(x[("派遣", r)] for r in self.roles)
+        # 目的関数: 外来 * 100 + メディカルの割り当てを最小化
+        problem += lpSum(x[("外来", r)] for r in self.roles) * 100 + lpSum(
+            x[("メディカル", r)] for r in self.roles
+        )
 
         logger.debug(f"num of variables: {len(problem.variables())}")
         for var in problem.variables():
@@ -239,7 +241,7 @@ if __name__ == "__main__":
             9: True,
             10: True,
         },
-        "派遣": {
+        "メディカル": {
             1: True,
             2: True,
             3: False,
@@ -265,7 +267,7 @@ if __name__ == "__main__":
         "加藤": {"血圧": True, "採血": True, "受付": False},
         "吉田": {"血圧": False, "採血": True, "受付": True},
         "山本": {"血圧": True, "採血": True, "受付": True},
-        "派遣": {"血圧": False, "採血": True, "受付": False},
+        "メディカル": {"血圧": False, "採血": True, "受付": False},
     }
 
     maker = MILPMaker(availability, role_compatibility)
