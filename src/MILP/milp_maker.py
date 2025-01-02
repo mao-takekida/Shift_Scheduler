@@ -1,4 +1,5 @@
 import logging
+import random
 from collections import defaultdict
 from typing import Dict, List
 
@@ -124,14 +125,21 @@ class MILPMaker:
 
         logger.debug(f"num of variables: {len(problem.variables())}")
 
-        # 目的関数: *不足 * 100 + メディカル - 不要 * 100 の最小化
+        # 目的関数: *不足 * 100 + メディカル - 不要 * 100 - 社員数 の最小化
         problem += (
             lpSum(x[("外来不足", r)] for r in self.roles) * 100
             + lpSum(x[("計測不足", r)] for r in self.roles * 100)
             + lpSum(x[("胃カメラ不足", r)] for r in self.roles) * 100
             + lpSum(x[("5F採血不足", r)] for r in self.roles) * 100
             + lpSum(x[("メディカル", r)] for r in self.roles)
-            - lpSum(x[("外来不要", r)] for r in self.roles) * 100,
+            - lpSum(x[("外来不要", r)] for r in self.roles) * 100
+            # 社員
+            - lpSum(
+                x[(e, r)]
+                for e in self.employees
+                if self.fulltime[e]
+                for r in self.roles
+            ),
             "Objective",
         )
 
@@ -146,7 +154,12 @@ class MILPMaker:
             logger.debug(f"{name}: ({constraint})")
 
         logger.info(f"Solving Day {day}...")
-        result = problem.solve(PULP_CBC_CMD(msg=False))
+        # seed をrandomに設定
+        seed = random.randint(0, 100000)
+        print("seed", seed)
+        result = problem.solve(
+            PULP_CBC_CMD(msg=False, options=["randomSeed={}".format(seed)])
+        )
         logger.debug(f"Solved: {result}")
 
         if result == 1:

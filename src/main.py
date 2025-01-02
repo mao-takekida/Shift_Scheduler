@@ -39,6 +39,8 @@ def main():
     schedule_list = []
     for day in list(availabilities.values())[0].keys():
         schedule = maker.solve_for_day(day)
+        # key でソート
+        schedule = dict(sorted(schedule.items(), key=lambda x: x[0]))
         logger.info(f"Day {day}:")
         for role, employee in schedule.items():
             logger.info(f"  {role}: {employee}")
