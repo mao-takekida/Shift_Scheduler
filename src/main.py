@@ -1,4 +1,5 @@
 import argparse
+from logging import Logger
 from typing import Dict, List
 
 from MILP.milp_maker import MILPMaker
@@ -74,12 +75,16 @@ def solve_schedule(data: Dict, num_trials: int, logger) -> List:
 
 
 def write_schedule_to_excel(
-    excel_path: str, sheet_name: str, schedule_list: List, logger
+    excel_path: str,
+    sheet_name: str,
+    schedule_list: List,
+    logger: Logger,
+    data: Dict[str, Dict],
 ):
     """解決されたスケジュールを新しいExcelファイルに書き込む関数"""
     logger.info("スケジュールをExcelファイルに書き込みます。")
     output_path = str(excel_path).replace(".xlsx", "_output.xlsx")
-    ewriter = ExcelWriter(output_path, sheet_name)
+    ewriter = ExcelWriter(output_path, sheet_name, data["weights"], data["fulltime"])
     ewriter.write_schedule(schedule_list)
     logger.info(f"スケジュールを書き込んだファイル: {output_path}")
 
@@ -100,7 +105,9 @@ def main():
     schedule_list = solve_schedule(data, args.num_trials, logger)
 
     # 解決されたスケジュールをExcelファイルに書き込み
-    write_schedule_to_excel(args.excel_path, args.sheet_name, schedule_list, logger)
+    write_schedule_to_excel(
+        args.excel_path, args.sheet_name, schedule_list, logger, data
+    )
 
     logger.info("処理が完了しました。")
 
