@@ -59,23 +59,7 @@ python src/main.py --help
 を確認してください。
 
 
-<!-- # 実行ファイルの作成 (macOS, Windows)
-pyinstaller を使って、実行ファイルを作成することができます。
-
-以下のコマンドを実行してください。
-```bash
-pyinstaller --noconsole --add-data "config/config.json:config" --name e-tax-automate --icon=icon/favicon.ico src/run_gui.py
-``` -->
-
-<!-- アプリケーションは `dist/e-tax-automate.app` に作成されます。
-ダブルクリックで実行することができます。 -->
-
 # 以下は、開発者向けの情報です。
-
-<!-- ## テストを実行することができます。
-```bash
-pytest
-``` -->
 
 ## pre-commit によるコードフォーマットと静的解析, テストを行うことができます。
 ```bash
