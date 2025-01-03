@@ -67,8 +67,8 @@ pyinstaller を使って、実行ファイルを作成することができま�
 pyinstaller --noconsole --add-data "config/config.json:config" --name e-tax-automate --icon=icon/favicon.ico src/run_gui.py
 ``` -->
 
-アプリケーションは `dist/e-tax-automate.app` に作成されます。
-ダブルクリックで実行することができます。
+<!-- アプリケーションは `dist/e-tax-automate.app` に作成されます。
+ダブルクリックで実行することができます。 -->
 
 # 以下は、開発者向けの情報です。
 
