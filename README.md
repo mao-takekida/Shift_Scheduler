@@ -29,8 +29,8 @@ pip install -r requirements.txt
 # この README.md があるディレクトリに移動.
 cd path/to/this/directory # 各自の環境に合わせてください
 
-# 仮想環境を作成 python3.12
-python3.12 -m venv venv
+# 仮想環境を作成 python3
+python3 -m venv venv
 
 # 仮想環境を有効化 (有効化されると、プロンプトに (venv) が表示されます。)
 source venv/Scripts/activate
@@ -49,7 +49,7 @@ python src/main.py data/data.xlsx 12月 -n 10
 
 ログレベルを指定してログを出力することもできます。
 ```bash
-python src/main.py -data/data.xlsx 12月 -n 10 -l DEBUG
+python src/main.py data/data.xlsx 12月 -n 10 -l DEBUG
 ```
 
 詳しくは
