@@ -89,28 +89,25 @@ def write_schedule_to_excel(
     logger.info(f"スケジュールを書き込んだファイル: {output_path}")
 
 
-def main():
-    # 引数の解析
-    parser = setup_parser()
-    args = parser.parse_args()
-
+def main(excel_path: str, sheet_name: str, num_trials: int, loglevel: str):
+    """メイン関数"""
     # ロガーの設定
-    logger = setup_logger("shift_scheduler", args.loglevel)
+    logger = setup_logger("shift_scheduler", loglevel)
     logger.info("処理を開始します。")
 
     # Excelファイルからのデータ読み込み
-    data = read_excel_data(args.excel_path, args.sheet_name, logger)
+    data = read_excel_data(excel_path, sheet_name, logger)
 
     # シフトスケジュールの解決
-    schedule_list = solve_schedule(data, args.num_trials, logger)
+    schedule_list = solve_schedule(data, num_trials, logger)
 
     # 解決されたスケジュールをExcelファイルに書き込み
-    write_schedule_to_excel(
-        args.excel_path, args.sheet_name, schedule_list, logger, data
-    )
+    write_schedule_to_excel(excel_path, sheet_name, schedule_list, logger, data)
 
     logger.info("処理が完了しました。")
 
 
 if __name__ == "__main__":
-    main()
+    parser = setup_parser()
+    args = parser.parse_args()
+    main(args.excel_path, args.sheet_name, args.num_trials, args.loglevel)
