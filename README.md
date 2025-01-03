@@ -44,12 +44,12 @@ pip install -r requirements.txt
 
 例として, 以下のコマンドを実行してください。
 ```bash
-python src/main.py data/data.xlsx 12月 -n 10
+python src/main.py data/sample_data.xlsx 12月 -n 10
 ```
 
 ログレベルを指定してログを出力することもできます。
 ```bash
-python src/main.py data/data.xlsx 12月 -n 10 -l DEBUG
+python src/main.py data/sample_data.xlsx 12月 -n 10 -l DEBUG
 ```
 
 詳しくは
