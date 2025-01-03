@@ -64,36 +64,72 @@ class ExcelWriter:
                     logger.warning("'yes' または 'no' を入力してください。")
         return True
 
-    def _get_formatted_worker_list(self, workers: List[str]) -> List[Tuple[str, dict]]:
+    def _write_workers_more_than_or_equal_to_two(
+        self, workbook, worksheet, row_idx, col_idx, workers
+    ):
         """
-        従業員のリストをリッチテキスト形式で返します。
+        2人以上の従業員が割り当てられている場合の処理を行います。
 
         Args:
+            workbook (xlsxwriter.Workbook): ワークブック。
+            worksheet (xlsxwriter.Worksheet): ワークシート。
+            row_idx (int): 行インデックス。
+            col_idx (int): 列インデックス。
             workers (List[str]): 従業員のリスト。
-
-        Returns:
-            List[Tuple[str, dict]]: 従業員の文字列とフォーマット情報のリスト。
         """
+        # セルのフォーマットを設定
+        red_fmt = workbook.add_format({"color": "red"})
+        green_fmt = workbook.add_format({"color": "green"})
+        black_fmt = workbook.add_format({"color": "black"})
+
         # 重み順に並び替え
         workers = sorted(workers, key=lambda x: self.weights.get(x, 0), reverse=True)
 
-        # リッチテキストの作成
-        formatted_workers = []
-        for worker in workers:
+        # セルに書き込むためのリストを作成
+        rich_text = []
+        for idx, worker in enumerate(workers):
             if "不足" in worker or "未割当" in worker:
-                # "不足"を含む場合は赤色のフォーマットを適用
-                formatted_workers.append((worker, {"color": "red"}))
-            # 社員がフルタイムの場合は青色のフォーマットを適用
+                rich_text.append(red_fmt)
+                rich_text.append(worker)
             elif self.fulltime.get(worker, False):
-                formatted_workers.append((worker, {"color": "green"}))
+                rich_text.append(green_fmt)
+                rich_text.append(worker)
             else:
-                # 通常のフォーマット
-                formatted_workers.append((worker, {"color": "black"}))
-            formatted_workers.append((", ", {}))  # カンマとスペースを追加
+                rich_text.append(black_fmt)
+                rich_text.append(worker)
+            # 最後の要素以外にはカンマとスペースを追加
+            if idx < len(workers) - 1:
+                rich_text.append(black_fmt)
+                rich_text.append(", ")
 
-        if len(workers) >= 2:
-            formatted_workers.pop()
-        return formatted_workers
+        # セルにリッチテキストを書き込む
+        worksheet.write_rich_string(row_idx, col_idx, *rich_text)
+
+    def _write_workers_equal_to_one(
+        self, workbook, worksheet, row_idx, col_idx, workers
+    ):
+        """
+        1人の従業員が割り当てられている場合の処理を行います。
+        write_rich_string が3つ以上のリストについてのみ可能なため
+
+        Args:
+            worksheet (xlsxwriter.Worksheet): ワークシート。
+            row_idx (int): 行インデックス。
+            col_idx (int): 列インデックス。
+            workers (List[str]): 従業員のリスト。
+        """
+        worker = workers[0]
+
+        cell_format = workbook.add_format()
+
+        if "不足" in worker or "未割当" in worker:
+            cell_format.set_font_color("red")
+        elif self.fulltime.get(worker, False):
+            cell_format.set_font_color("green")
+        else:
+            cell_format.set_font_color("black")
+
+        worksheet.write(row_idx, col_idx, worker, cell_format)
 
     def _create_schedule_excel(
         self, schedule_list: List[Tuple[str, Dict[str, List[str]]]]
@@ -121,18 +157,16 @@ class ExcelWriter:
 
             for col_idx, role in enumerate(roles, start=1):
                 workers = roles_dict.get(role, [])
-                formatted_workers_parts = self._get_formatted_worker_list(workers)
-
-                # リッチテキスト用のデータを構築
-                cell_rich_text = []
-                for part, fmt in formatted_workers_parts:
-                    if "color" in fmt:
-                        format_obj = workbook.add_format({"color": fmt["color"]})
-                        cell_rich_text.append(format_obj)
-                    cell_rich_text.append(part)
-
-                if cell_rich_text:
-                    worksheet.write_rich_string(row_idx, col_idx, *cell_rich_text)
+                if len(workers) >= 2:
+                    self._write_workers_more_than_or_equal_to_two(
+                        workbook, worksheet, row_idx, col_idx, workers
+                    )
+                elif len(workers) == 1:
+                    self._write_workers_equal_to_one(
+                        workbook, worksheet, row_idx, col_idx, workers
+                    )
+                else:
+                    pass
 
         # ファイルを保存
         workbook.close()
