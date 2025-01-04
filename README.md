@@ -44,19 +44,30 @@ pip install -r requirements.txt
 
 例として, 以下のコマンドを実行してください。
 ```bash
-python src/main.py data/sample_data.xlsx 12月 -n 10
+python src/run_gui.py -l DEBUG
 ```
 
 ログレベルを指定してログを出力することもできます。
 ```bash
-python src/main.py data/sample_data.xlsx 12月 -n 10 -l DEBUG
+python src/run_gui.py -l DEBUG
 ```
 
 詳しくは
 ```bash
-python src/main.py --help
+python src/run_gui.py --help
 ```
 を確認してください。
+
+## 3. 実行ファイルの作成 (macOS, Windows)
+pyinstaller を使って、実行ファイルを作成することができます。
+
+以下のコマンドを実行してください。
+```bash
+pyinstaller --noconsole --add-data "config/config.json:config" --name shift_scheduler --icon=icon/feather_pen.ico src/run_gui.py
+```
+
+アプリケーションは `dist/shift_scheduler.app` に作成されます。
+ダブルクリックで実行することができます。
 
 
 # 以下は、開発者向けの情報です。

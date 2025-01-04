@@ -57,7 +57,7 @@ class MainScreen:
                 )
                 update_label(
                     f"処理が正常に終了しました.\n\
-出力: {config["output_dir"] + sheet_name + "_schedule.xlsx"}"
+出力: {config["output_dir"] + "/" + sheet_name + "_schedule.xlsx"}"
                 )
             except Exception as ex:
                 error_message = f"エラー: {ex}"

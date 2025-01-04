@@ -1,11 +1,6 @@
 import argparse
-import sys
-from pathlib import Path
 
 import flet as ft
-
-if str(Path(__file__).parents[1]) not in sys.path:
-    sys.path.append(str(Path(__file__).parents[1]))
 
 from gui.screen.main_screen import MainScreen
 from utils.logger import setup_logger
