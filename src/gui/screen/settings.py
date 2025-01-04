@@ -56,6 +56,29 @@ class SettingsScreen:
 
         return excel_path_field, select_button
 
+    def _output_dir(self) -> Tuple[ft.TextField, ft.ElevatedButton]:
+        # テキストフィールドの初期値
+        output_dir_field = TextFieldsCreator.create_text_field_read_only(
+            label="出力フォルダ",
+            value=self.config.get("output_dir", ""),
+        )
+
+        def on_result(result: ft.FilePickerResultEvent):
+            if result.path:
+                logger.info(f"選択されたディレクトリ: {result.path}")
+                self.config["output_dir"] = result.path
+                output_dir_field.value = result.path
+                self._change_settings()
+            else:
+                logger.info("ディレクトリが選択されていません")
+
+        # フォルダ選択ボタン
+        select_button = FilePicker.select_file_button(
+            self.page, "フォルダを選択", on_result, allow_multiple=False, is_dir=True
+        )
+
+        return output_dir_field, select_button
+
     def _change_settings(self):
         logger.debug(f"設定を保存します: {self.config}")
         save_config(self.config)
@@ -79,11 +102,17 @@ class SettingsScreen:
         back_button = self._back_button()
 
         # エクセルの設定
-        excel_path_field, select_button = self._excel_path()
+        excel_path_field, excel_select_button = self._excel_path()
+
+        # 出力先ディレクトリの設定
+        output_dir_field, outputdir_select_button = self._output_dir()
 
         self.page.add(
             back_button,
             ft.Divider(),
             excel_path_field,
-            select_button,
+            excel_select_button,
+            ft.Divider(),
+            output_dir_field,
+            outputdir_select_button,
         )

@@ -24,6 +24,8 @@ def _make_config() -> dict:
     logger.debug("Creating default config file")
     config = {
         "excel_path": "",
+        "output_dir": "",
+        "num_trials": 1,
     }
     return config
 

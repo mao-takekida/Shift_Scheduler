@@ -28,7 +28,7 @@ class MainScreen:
         self.page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
         # コンポーネント初期化
-        label = ft.Text("", size=30)
+        label = ft.Text("", size=20)
         text_field = ft.TextField(label="シート名を入力してください")
         loading_spinner = ft.ProgressRing(visible=False)  # ローディングスピナー
 
@@ -49,10 +49,10 @@ class MainScreen:
 
             try:
                 config = load_config()
-                main(config["excel_path"], sheet_name, 2, "output/")
+                main(config["excel_path"], sheet_name, 2, config["output_dir"])
                 update_label(
-                    f"処理が正常に終了しました.\n \
-                        出力は {"output/" + sheet_name + "_schedule.xlsx"} です."
+                    f"処理が正常に終了しました.\n\
+出力: {config["output_dir"] + sheet_name + "_schedule.xlsx"}"
                 )
             except Exception as ex:
                 error_message = f"エラー: {ex}"
