@@ -5,7 +5,7 @@ a = Analysis(
     ['src/run_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('config/config.json', 'config')],
+    datas=[('config/config.json', 'config'), ('venv/lib/python3.12/site-packages/pulp/', 'pulp/')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,7 +26,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
@@ -42,4 +42,10 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='shift_scheduler',
+)
+app = BUNDLE(
+    coll,
+    name='shift_scheduler.app',
+    icon='icon/feather_pen.ico',
+    bundle_identifier=None,
 )

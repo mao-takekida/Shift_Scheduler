@@ -63,7 +63,7 @@ pyinstaller を使って、実行ファイルを作成することができま�
 
 以下のコマンドを実行してください。
 ```bash
-pyinstaller --noconsole --add-data "config/config.json:config" --name shift_scheduler --icon=icon/feather_pen.ico src/run_gui.py
+pyinstaller --noconsole --add-data "config/config.json:config" --add-data "venv/lib/python3.12/site-packages/pulp/:pulp/" --name shift_scheduler --icon=icon/feather_pen.ico src/run_gui.py
 ```
 
 アプリケーションは `dist/shift_scheduler.app` に作成されます。
