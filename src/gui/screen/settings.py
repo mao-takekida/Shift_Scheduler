@@ -79,6 +79,25 @@ class SettingsScreen:
 
         return output_dir_field, select_button
 
+    # 試行回数の設定
+    def _num_of_trials(self) -> Tuple[ft.TextField, ft.ElevatedButton]:
+        # テキストフィールドの初期値
+        num_of_trials_field = TextFieldsCreator.create_text_field_editable(
+            label="試行回数",
+            value=self.config.get("num_trials", "1"),
+        )
+
+        def on_change(e):
+            if e.control.value.isdigit():
+                logger.info(f"試行回数を設定します: {e.control.value}")
+                self.config["num_trials"] = int(e.control.value)
+                self._change_settings()
+            else:
+                logger.info("試行回数は整数でなければなりません")
+
+        num_of_trials_field.on_change = on_change
+        return num_of_trials_field
+
     def _change_settings(self):
         logger.debug(f"設定を保存します: {self.config}")
         save_config(self.config)
@@ -100,12 +119,9 @@ class SettingsScreen:
 
         # 戻るボタン
         back_button = self._back_button()
-
-        # エクセルの設定
         excel_path_field, excel_select_button = self._excel_path()
-
-        # 出力先ディレクトリの設定
         output_dir_field, outputdir_select_button = self._output_dir()
+        num_of_trials_field = self._num_of_trials()
 
         self.page.add(
             back_button,
@@ -115,4 +131,6 @@ class SettingsScreen:
             ft.Divider(),
             output_dir_field,
             outputdir_select_button,
+            ft.Divider(),
+            num_of_trials_field,
         )

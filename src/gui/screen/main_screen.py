@@ -49,7 +49,12 @@ class MainScreen:
 
             try:
                 config = load_config()
-                main(config["excel_path"], sheet_name, 2, config["output_dir"])
+                main(
+                    config["excel_path"],
+                    sheet_name,
+                    config["num_trials"],
+                    config["output_dir"],
+                )
                 update_label(
                     f"処理が正常に終了しました.\n\
 出力: {config["output_dir"] + sheet_name + "_schedule.xlsx"}"
