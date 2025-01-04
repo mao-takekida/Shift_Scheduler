@@ -11,6 +11,7 @@ import flet as ft
 
 from gui.utils.file_picker import FilePicker
 from gui.utils.text_fields_creator import TextFieldsCreator
+from utils.config import load_config, save_config
 
 logger = logging.getLogger("shift_scheduler")
 
@@ -18,6 +19,7 @@ logger = logging.getLogger("shift_scheduler")
 class SettingsScreen:
     def __init__(self, page: ft.Page):
         self.page = page
+        self.config = load_config()
 
     # 戻るボタン
     def _back_button(self) -> ft.ElevatedButton:
@@ -33,17 +35,17 @@ class SettingsScreen:
     # エクセルの設定
     def _excel_path(self) -> Tuple[ft.TextField, ft.ElevatedButton]:
         # テキストフィールドの初期値
-        excel_path = TextFieldsCreator.create_text_field_read_only(
+        excel_path_field = TextFieldsCreator.create_text_field_read_only(
             label="Excelファイルのパス",
-            value="",
+            value=self.config.get("excel_path", ""),
         )
 
         def on_result(result: ft.FilePickerResultEvent):
             if result.files:
-                excel_path.value = result.files[0].path
-                self.page.update()
-
-                logger.info(f"選択されたファイル: {excel_path.value}")
+                logger.info(f"選択されたファイル: {result.files[0].path}")
+                self.config["excel_path"] = result.files[0].path
+                excel_path_field.value = result.files[0].path
+                self._change_settings()
             else:
                 logger.info("ファイルが選択されていません")
 
@@ -52,10 +54,17 @@ class SettingsScreen:
             self.page, "ファイルを選択", on_result, allow_multiple=False
         )
 
-        return excel_path, select_button
+        return excel_path_field, select_button
 
-    def _on_change(self):
+    def _change_settings(self):
+        logger.debug(f"設定を保存します: {self.config}")
+        save_config(self.config)
         self.page.update()
+
+    def _setup_page(self):
+        self.page.clean()
+        self.page.scroll = ft.ScrollMode.AUTO
+        self.page.vertical_alignment = ft.MainAxisAlignment.START
 
     def show_settings(self) -> None:
         """
@@ -64,19 +73,17 @@ class SettingsScreen:
         Args:
             page (ft.Page): 設定画面を表示する Flet ページオブジェクト。
         """
-        self.page.clean()
-        self.page.scroll = ft.ScrollMode.AUTO
-        self.page.vertical_alignment = ft.MainAxisAlignment.START
+        self._setup_page()
 
-        # ボタン
+        # 戻るボタン
         back_button = self._back_button()
 
         # エクセルの設定
-        excel_path, select_button = self._excel_path()
+        excel_path_field, select_button = self._excel_path()
 
         self.page.add(
             back_button,
             ft.Divider(),
-            excel_path,
+            excel_path_field,
             select_button,
         )

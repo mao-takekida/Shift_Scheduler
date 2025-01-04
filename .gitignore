@@ -26,3 +26,6 @@ data/*
 
 # sample_data.xlsxを無視しない
 !data/sample_data.xlsx
+
+# config
+config/config.json
