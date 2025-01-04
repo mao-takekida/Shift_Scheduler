@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 例として, 以下のコマンドを実行してください。
 ```bash
-python src/run_gui.py -l DEBUG
+python src/run_gui.py
 ```
 
 ログレベルを指定してログを出力することもできます。
@@ -72,7 +72,7 @@ pyinstaller --noconsole --add-data "config/config.json:config" --name shift_sche
 
 # 以下は、開発者向けの情報です。
 
-## pre-commit によるコードフォーマットと静的解析, テストを行うことができます。
+## pre-commit によるコードフォーマットと静的解析を行うことができます。
 ```bash
 pre-commit install
 ```
