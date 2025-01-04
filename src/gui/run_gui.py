@@ -12,8 +12,9 @@ from utils.logger import setup_logger
 
 
 def main():
-    def app(page: ft.Page):
-        MainScreen.show_main(page)
+    def app(page: ft.Page = None):
+        main_screen = MainScreen(page)
+        main_screen.show_main()
 
     ft.app(target=app)
 
