@@ -1,11 +1,13 @@
 import argparse
+import logging
 from logging import Logger
 from typing import Dict, List
 
 from MILP.milp_maker import MILPMaker
 from ReadExcel.excel_reader import ExcelReader
-from utils.logger import setup_logger
 from WriteExcel.excel_writer import ExcelWriter
+
+logger = logging.getLogger("shift_scheduler")
 
 
 def setup_parser() -> argparse.ArgumentParser:
@@ -89,10 +91,8 @@ def write_schedule_to_excel(
     logger.info(f"スケジュールを書き込んだファイル: {output_path}")
 
 
-def main(excel_path: str, sheet_name: str, num_trials: int, loglevel: str):
+def main(excel_path: str, sheet_name: str, num_trials: int):
     """メイン関数"""
-    # ロガーの設定
-    logger = setup_logger("shift_scheduler", loglevel)
     logger.info("処理を開始します。")
 
     # Excelファイルからのデータ読み込み

@@ -1,5 +1,4 @@
 import argparse
-import logging
 import sys
 from pathlib import Path
 
@@ -8,15 +7,13 @@ import flet as ft
 if str(Path(__file__).parents[1]) not in sys.path:
     sys.path.append(str(Path(__file__).parents[1]))
 
-from gui.screen.main_screen import show_main
+from gui.screen.main_screen import MainScreen
 from utils.logger import setup_logger
-
-logger = logging.getLogger("shift_scheduler")
 
 
 def main():
     def app(page: ft.Page):
-        show_main(page)
+        MainScreen.show_main(page)
 
     ft.app(target=app)
 
@@ -33,6 +30,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    setup_logger("shift_scheduler", args.log_level)
+    logger = setup_logger("shift_scheduler", args.log_level)
+
     main()
     logger.debug("アプリケーションを終了します")
