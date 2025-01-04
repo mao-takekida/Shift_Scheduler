@@ -1,105 +1,18 @@
 import logging
-from typing import Any, Callable, Tuple
+import sys
+from pathlib import Path
+from typing import Tuple
+
+if str(Path(__file__).parents[2]) not in sys.path:
+    print(sys.path)
+    sys.path.append(str(Path(__file__).parents[2]))
 
 import flet as ft
 
+from gui.utils.file_picker import FilePicker
+from gui.utils.text_fields_creator import TextFieldsCreator
+
 logger = logging.getLogger("shift_scheduler")
-
-
-class FilePicker:
-    @staticmethod
-    def select_file_button(
-        page: ft.Page,
-        label: str,
-        on_result: Callable[[ft.FilePickerResultEvent], None],
-        allow_multiple: bool = True,
-    ) -> ft.ElevatedButton:
-        """
-        ファイル選択ダイアログを開いてファイルを選択します。
-
-        Args:
-            page (ft.Page): ファイル選択ダイアログを表示する Flet ページオブジェクト。
-            label (str): ボタンのラベル。
-            on_result (Callable[[ft.FilePickerResultEvent], None]):
-                ファイル選択時に呼び出されるコールバック関数。
-            allow_multiple (bool, optional): 複数のファイルを選択できるかどうか。デフォルトは True。
-        """
-
-        def on_click(e):
-            logger.debug("ファイル選択ダイアログを開きます。")
-            picker = ft.FilePicker(on_result)
-            if picker not in page.overlay:
-                page.overlay.append(picker)
-                page.update()
-            # 一つだけ
-            picker.pick_files(allow_multiple=allow_multiple)
-
-        button = ft.ElevatedButton(label, on_click=on_click)
-        return button
-
-
-class TextFieldsCreator:
-
-    @staticmethod
-    def create_text_field_editable(
-        label: str,
-        value: str,
-        on_change: Callable[[Any], None] = None,
-        visible: bool = True,
-    ) -> ft.TextField:
-        """
-        編集可能なテキストフィールドを生成します。
-
-        Args:
-            label (str): テキストフィールドのラベル。
-            value (str): テキストフィールドの初期値。
-            on_change (Callable[[Any], None], optional):
-                値の変更時にトリガーされるコールバック関数。デフォルトは None。
-            visible (bool, optional): テキストフィールドの表示状態。デフォルトは True。
-
-        Returns:
-            ft.TextField: 編集可能なテキストフィールドインスタンス。
-        """
-        return ft.TextField(
-            label=label,
-            value=value,
-            on_change=on_change,
-            visible=visible,
-        )
-
-    @staticmethod
-    def create_text_field_read_only(
-        label: str,
-        value: str,
-        on_change: Callable[[Any], None] = None,
-        visible: bool = True,
-    ) -> ft.TextField:
-        """
-        読み取り専用のテキストフィールドを生成します。
-
-        Args:
-            label (str): テキストフィールドのラベル。
-            value (str): テキストフィールドの初期値。
-            on_change (Callable[[Any], None], optional):
-                値の変更時にトリガーされるコールバック関数。デフォルトは None。
-            visible (bool, optional): テキストフィールドの表示状態。デフォルトは True。
-
-        Returns:
-            ft.TextField: 読み取り専用のテキストフィールドインスタンス。
-        """
-        return ft.TextField(
-            label=label,
-            value=value,
-            on_change=on_change,
-            visible=visible,
-            read_only=True,
-            text_style=ft.TextStyle(color=ft.colors.GREY_700),
-            bgcolor=ft.colors.GREY_200,
-            border=ft.InputBorder.NONE,
-            hint_text="選択されていません",
-            max_length=100,
-            keyboard_type=ft.KeyboardType.TEXT,
-        )
 
 
 class SettingsScreen:
