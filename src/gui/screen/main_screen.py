@@ -51,7 +51,8 @@ class MainScreen:
                 config = load_config()
                 main(config["excel_path"], sheet_name, 2, "output/")
                 update_label(
-                    f"処理が正常に終了しました.\n出力は {"output/" + sheet_name + ".xlsx"} です."
+                    f"処理が正常に終了しました.\n \
+                        出力は {"output/" + sheet_name + "_schedule.xlsx"} です."
                 )
             except Exception as ex:
                 error_message = f"エラー: {ex}"
