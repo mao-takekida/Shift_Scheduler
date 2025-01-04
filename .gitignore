@@ -29,3 +29,7 @@ data/*
 
 # config
 config/config.json
+
+# output
+output/*
+!ouput.gitkeep

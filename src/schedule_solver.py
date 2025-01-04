@@ -1,10 +1,11 @@
 import argparse
 import logging
-from logging import Logger
+from pathlib import Path
 from typing import Dict, List
 
 from MILP.milp_maker import MILPMaker
 from ReadExcel.excel_reader import ExcelReader
+from utils.logger import setup_logger
 from WriteExcel.excel_writer import ExcelWriter
 
 logger = logging.getLogger("shift_scheduler")
@@ -17,10 +18,11 @@ def setup_parser() -> argparse.ArgumentParser:
     parser.add_argument("sheet_name", help="シート名")
     parser.add_argument("-n", "--num_trials", help="試行回数", type=int, default=1)
     parser.add_argument("-l", "--loglevel", help="ログレベル", default="INFO")
+    parser.add_argument("-o", "--output_dir", help="出力ディレクトリ", default="output")
     return parser
 
 
-def read_excel_data(excel_path: str, sheet_name: str, logger) -> Dict:
+def read_excel_data(excel_path: str, sheet_name: str) -> Dict:
     """Excelファイルからデータを読み込む関数"""
     logger.info("Excelファイルからデータを読み込みます。")
     reader = ExcelReader(excel_path)
@@ -44,7 +46,7 @@ def read_excel_data(excel_path: str, sheet_name: str, logger) -> Dict:
     }
 
 
-def solve_schedule(data: Dict, num_trials: int, logger) -> List:
+def solve_schedule(data: Dict, num_trials: int) -> List:
     """MILPを使用してシフトスケジュールを解決する関数"""
     logger.info("MILPを使用してシフトスケジュールを解決します。")
     maker = MILPMaker(
@@ -80,29 +82,29 @@ def write_schedule_to_excel(
     excel_path: str,
     sheet_name: str,
     schedule_list: List,
-    logger: Logger,
     data: Dict[str, Dict],
+    output_dir: str,
 ):
     """解決されたスケジュールを新しいExcelファイルに書き込む関数"""
     logger.info("スケジュールをExcelファイルに書き込みます。")
-    output_path = str(excel_path).replace(".xlsx", "_output.xlsx")
+    output_path = Path(output_dir) / f"{sheet_name}_schedule.xlsx"
     ewriter = ExcelWriter(output_path, sheet_name, data["weights"], data["fulltime"])
     ewriter.write_schedule(schedule_list)
     logger.info(f"スケジュールを書き込んだファイル: {output_path}")
 
 
-def main(excel_path: str, sheet_name: str, num_trials: int):
+def main(excel_path: str, sheet_name: str, num_trials: int, output_dir: str):
     """メイン関数"""
     logger.info("処理を開始します。")
 
     # Excelファイルからのデータ読み込み
-    data = read_excel_data(excel_path, sheet_name, logger)
+    data = read_excel_data(excel_path, sheet_name)
 
     # シフトスケジュールの解決
-    schedule_list = solve_schedule(data, num_trials, logger)
+    schedule_list = solve_schedule(data, num_trials)
 
     # 解決されたスケジュールをExcelファイルに書き込み
-    write_schedule_to_excel(excel_path, sheet_name, schedule_list, logger, data)
+    write_schedule_to_excel(excel_path, sheet_name, schedule_list, data, output_dir)
 
     logger.info("処理が完了しました。")
 
@@ -110,4 +112,12 @@ def main(excel_path: str, sheet_name: str, num_trials: int):
 if __name__ == "__main__":
     parser = setup_parser()
     args = parser.parse_args()
-    main(args.excel_path, args.sheet_name, args.num_trials, args.loglevel)
+
+    logger = setup_logger("shift_scheduler", args.loglevel)
+
+    main(
+        args.excel_path,
+        args.sheet_name,
+        args.num_trials,
+        args.output_dir,
+    )

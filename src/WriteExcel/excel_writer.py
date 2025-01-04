@@ -31,9 +31,9 @@ class ExcelWriter:
             schedule_list (List[Tuple[str, Dict[str, List[str]]]]): スケジュールのリスト。
                 フォーマット: [(day_index, {role: [worker1, worker2, ...]})]
         """
-        if not self._confirm_overwrite():
-            logger.info("スケジュールの書き込みを中止しました。")
-            return
+        # if not self._confirm_overwrite():
+        #     logger.info("スケジュールの書き込みを中止しました。")
+        #     return
 
         try:
             self._create_schedule_excel(schedule_list)

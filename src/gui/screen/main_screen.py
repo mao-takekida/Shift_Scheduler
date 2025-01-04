@@ -1,8 +1,14 @@
 import logging
+import sys
+from pathlib import Path
 
 import flet as ft
 
 from schedule_solver import main
+
+if str(Path(__file__).parents[2]) not in sys.path:
+    sys.path.append(str(Path(__file__).parents[2]))
+from utils.config import load_config
 
 logger = logging.getLogger("shift_scheduler")
 
@@ -36,13 +42,17 @@ class MainScreen:
             if submit_button.disabled:
                 return
             submit_button.disabled = True
-            user_input = text_field.value
-            update_label(f"入力: {user_input}")
+            sheet_name = text_field.value
+            update_label(f"入力: {sheet_name}")
             loading_spinner.visible = True
             self.page.update()
 
             try:
-                main("data/sample_data.xlsx", user_input, 2)
+                config = load_config()
+                main(config["excel_path"], sheet_name, 2, "output/")
+                update_label(
+                    f"処理が正常に終了しました.\n出力は {"output/" + sheet_name + ".xlsx"} です."
+                )
             except Exception as ex:
                 error_message = f"エラー: {ex}"
                 update_label(error_message)
