@@ -81,10 +81,18 @@ class SettingsScreen:
 
     # 試行回数の設定
     def _num_of_trials(self) -> Tuple[ft.TextField, ft.ElevatedButton]:
-        # テキストフィールドの初期値
-        num_of_trials_field = TextFieldsCreator.create_text_field_editable(
+        # dropdown で選択する
+        num_of_trials_field = ft.Dropdown(
             label="試行回数",
-            value=self.config.get("num_trials", "1"),
+            value=self.config.get("num_trials", 1),
+            item_height=48.0,
+            options=[
+                ft.dropdown.Option(
+                    str(i),
+                    text_style=ft.TextStyle(size=15),
+                )
+                for i in range(1, 31)
+            ],
         )
 
         def on_change(e):
